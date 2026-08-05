@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Tool output, in case anyone runs it inside the repo
+*_compressed.*
+.mcon_tmp_*
+
+tests/data/

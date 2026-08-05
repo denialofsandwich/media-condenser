@@ -1,0 +1,78 @@
+[project]
+name = "media_condenser"
+version = "0.1.0"
+description = "Scale images and videos down to save disk space"
+readme = "README.md"
+authors = [
+    { name = "Rene Fa", email = "farene1996+github@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "pydantic>=2.13.4",
+    "pyyaml>=6.0.3",
+    "rich>=15.0.0",
+    "typer>=0.27.1",
+]
+
+[project.scripts]
+mcon = "media_condenser.cli:app"
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.1",
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: runs real ffmpeg/ImageMagick encodes over the fixtures"]
+pythonpath = ["tests"]
+
+[tool.ruff]
+line-length = 120
+
+# Deliberately below `requires-python`. At py314 the formatter applies PEP 758 and
+# rewrites `except (TypeError, ValueError):` into `except TypeError, ValueError:`.
+# That is valid 3.14, but it is indistinguishable at a glance from the Python 2
+# construct it resembles, and every reader has to stop and check. Pinning the
+# formatter to py313 keeps the parentheses. Nothing here needs 3.14-only rewrites,
+# so the only effect is on formatting.
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "W",    # pycodestyle warnings
+    "I",    # import sorting
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "C4",   # comprehensions
+    "SIM",  # simplification
+    "RUF",  # ruff-specific
+    "TID",  # tidy imports -- enforces the no-relative-imports half of the style
+]
+
+[tool.ruff.lint.flake8-tidy-imports]
+# Google style: always the full package path, even for a sibling module. The rest of
+# the import convention (import modules, not the names inside them) has no ruff rule
+# and lives in AGENTS.md.
+ban-relative-imports = "all"
+
+[tool.ruff.lint.isort]
+known-first-party = ["media_condenser"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests reach into private helpers deliberately, to pin behaviour that has no public
+# surface of its own.
+"tests/*" = ["SLF001"]
+
+[tool.ty.environment]
+root = ["./src"]
+# `tests/` is on the path via pytest's `pythonpath`, so ty needs telling too or every
+# `import fixtures` in a test reads as an unresolved import.
+extra-paths = ["tests"]

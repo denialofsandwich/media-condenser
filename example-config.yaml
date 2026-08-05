@@ -1,0 +1,77 @@
+---
+# Example global config for mcon. Copy to ~/.config/mcon/config.yaml and edit,
+# or pass with --config. Every value shown is the default.
+
+# copy    = write into output_dir; never touches sources
+# replace = overwrite originals, via a same-filesystem temp file and atomic rename
+strategy: copy
+
+# Mirror tree for the copy strategy, which is refused without one -- there is no
+# sensible place to put output otherwise. Rejected alongside strategy: replace,
+# which writes in place and would silently ignore it. Either set this, or switch
+# to strategy: replace.
+output_dir: null
+
+# Concurrent encode jobs. encoder_pools (threads per job) is derived as
+# cores // jobs unless set explicitly -- x265's own pool otherwise grabs every
+# core per job and oversubscribes badly.
+jobs: 4
+encoder_pools: null
+
+# A logging.config.dictConfig document, merged onto the packaged default per leaf
+# key -- so a fragment like the one below keeps every formatter and handler that
+# ships with the tool. See src/media_condenser/default_logging.yaml for what it is merged onto,
+# and the README's Logging section for the logger names worth tuning.
+#
+# logging:
+#   loggers:
+#     media_condenser:
+#       level: INFO           # DEBUG here is the same as running with -v
+#     media_condenser.probe:
+#       level: DEBUG          # just the ffprobe/exiftool command lines
+#
+# Because the whole document is yours to extend, a persistent log file needs no
+# dedicated flag -- add a handler and name it:
+#
+# logging:
+#   handlers:
+#     file:
+#       class: logging.handlers.RotatingFileHandler
+#       filename: ~/.local/state/mcon.log
+#       maxBytes: 1048576
+#       backupCount: 3
+#       formatter: plain
+#       level: DEBUG
+#   loggers:
+#     media_condenser:
+#       level: DEBUG
+#       handlers: [rich, file]   # --log-format swaps `rich`, and leaves `file` alone
+
+tools:
+  ffmpeg: ffmpeg
+  ffprobe: ffprobe
+  exiftool: exiftool
+  magick: magick
+
+# Anything under `rules` can be overridden per directory by a .mcon.yaml file.
+rules:
+  images:
+    enabled: true
+    max_edge: 2048          # longest side; shrink-only
+    quality: 85
+    subsampling: "4:2:0"
+    skip_png: true          # screenshots/diagrams lose legibility for little gain
+    skip_name_patterns: ["Screenshot*"]
+  videos:
+    enabled: true
+    max_short_edge: 720     # shortest side, so portrait and landscape both hit 720p
+    crf: 23
+    codec: libx265
+    preset: medium
+    tag: hvc1               # libx265 defaults to hev1, which some players reject
+    copy_audio: true
+  motion_photos:
+    enabled: true
+    process_video: true     # re-encode the embedded clip through the same 720p path
+    process_gain_map: true  # carry the Ultra HDR gain map across
+  exclude: []               # glob patterns skipped entirely

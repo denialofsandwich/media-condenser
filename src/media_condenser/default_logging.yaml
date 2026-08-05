@@ -1,0 +1,53 @@
+# Default logging configuration, applied through logging.config.dictConfig.
+#
+# The whole document is overridable from the `logging:` section of the global
+# config file, merged per leaf key -- setting only a level keeps every formatter
+# and handler defined here. See README "Logging".
+#
+# All three handlers are always defined; --log-format only changes which one the
+# loggers point at.
+---
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  # RichHandler renders the level, time and highlighting itself, so the format
+  # string carries the message alone.
+  rich:
+    format: "%(message)s"
+    datefmt: "[%X]"
+  plain:
+    format: "%(asctime)s %(levelname)-8s %(name)s: %(message)s"
+    datefmt: "%Y-%m-%dT%H:%M:%S"
+  json:
+    (): media_condenser.logging_setup.JsonFormatter
+
+handlers:
+  # A factory rather than a class, so the handler shares the one Console the
+  # progress display draws on -- that is what makes log lines appear above the
+  # bar instead of tearing through it.
+  rich:
+    (): media_condenser.logging_setup.rich_handler
+    level: NOTSET
+    formatter: rich
+  plain:
+    class: logging.StreamHandler
+    stream: ext://sys.stderr
+    level: NOTSET
+    formatter: plain
+  json:
+    class: logging.StreamHandler
+    stream: ext://sys.stderr
+    level: NOTSET
+    formatter: json
+
+loggers:
+  media_condenser:
+    level: INFO
+    handlers: [rich]
+    propagate: false
+
+# Third-party and stdlib warnings still get through, without their debug chatter.
+root:
+  level: WARNING
+  handlers: [rich]

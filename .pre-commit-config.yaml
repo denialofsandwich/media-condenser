@@ -1,0 +1,31 @@
+---
+# Install once with:  pre-commit install
+# Run over everything: pre-commit run --all-files
+#
+# Config for each tool lives with the thing it checks: ruff and ty in
+# pyproject.toml, yamllint in .yamllint.yaml.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.1
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/astral-sh/ty-pre-commit
+    rev: v0.0.66
+    hooks:
+      - id: ty
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.38.0
+    hooks:
+      - id: yamllint
+        args: [--strict]
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.12.1
+    hooks:
+      # Fails if pyproject.toml and uv.lock have drifted apart, which otherwise
+      # only surfaces as a confusing dependency error on someone else's machine.
+      - id: uv-lock
