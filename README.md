@@ -12,6 +12,18 @@ It focusses on simplicity, reasonable defaults, good ux and the option to be use
 
 Requires `ffmpeg`, `ffprobe`, `exiftool` and `magick` on `PATH`.
 
+## Installation
+
+```bash
+# As a standalone tool (recommended)
+uv tool install media_condenser
+
+# Or with pip
+pip install media_condenser
+```
+
+Both install the `mcon` command. Python 3.14+ is required.
+
 ## Motivation
 
 Archiving old photos and videos can take up a lot of space and most of this data is basically wasted.
@@ -24,13 +36,13 @@ So I created this tool, to control ffmpeg and more instead. You just give it a d
 
 ```bash
 # See what would happen. Writes nothing.
-uv run mcon --dry-run ~/Photos --output-dir ~/Photos_compressed
+mcon --dry-run ~/Photos --output-dir ~/Photos_compressed
 
 # Full run, output into a mirror tree
-uv run mcon ~/Photos --output-dir ~/Photos_compressed
+mcon ~/Photos --output-dir ~/Photos_compressed
 
 # Overwrite originals (temp file + atomic rename per file)
-uv run mcon ~/Photos --strategy replace
+mcon ~/Photos --strategy replace
 ```
 
 | Option                         | Purpose                                                                                                                                                                                                                                                                                   |
