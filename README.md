@@ -10,7 +10,7 @@ It focusses on simplicity, reasonable defaults, good ux and the option to be use
 - Anything already within target is **skipped**, byte-for-byte
 - Anything of a type it cannot process (HEIC, AVIF, raw) is reported as unsupported and left alone
 
-Requires `ffmpeg`, `ffprobe`, `exiftool` and `convert` (ImageMagick) on `PATH`.
+Requires `ffmpeg`, `ffprobe`, `exiftool` and `magick` on `PATH`.
 
 ## Motivation
 

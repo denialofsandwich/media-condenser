@@ -116,7 +116,7 @@ def test_output_dimensions_are_re_read_rather_than_recalled(tmp_path) -> None:
     original = prober.image_info(target)
     before = prober.exif(target)
     subprocess.run(
-        ["convert", str(target), "-resize", "64x64", str(target)],
+        ["magick", str(target), "-resize", "64x64", str(target)],
         check=True,
         capture_output=True,
     )

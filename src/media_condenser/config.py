@@ -103,11 +103,7 @@ class ToolPaths(pydantic.BaseModel):
     ffmpeg: str = "ffmpeg"
     ffprobe: str = "ffprobe"
     exiftool: str = "exiftool"
-    convert: str = "convert"
-    """ImageMagick's legacy per-verb command, not the unified ``magick`` binary --
-    the same operations either way, but ``convert`` is what a plain ``apt-get
-    install imagemagick`` gives you on Debian/Ubuntu, which never packaged
-    ImageMagick 7."""
+    magick: str = "magick"
 
 
 class GlobalConfig(pydantic.BaseModel):

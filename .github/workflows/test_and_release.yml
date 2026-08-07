@@ -13,7 +13,11 @@ permissions:
 
 jobs:
   test_python:
-    runs-on: ubuntu-latest
+    # Pinned above ubuntu-latest (still 24.04): its apt packages are an old
+    # ImageMagick 6 (no `magick` binary) and an exiftool that predates the
+    # XMP-GCamera motion-photo tags. 26.04 ships both new enough. Currently a
+    # GitHub-hosted runner in public preview, not GA -- revisit if it churns.
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -47,7 +51,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
@@ -73,7 +77,7 @@ jobs:
 
       - name: Upload package artifacts
         if: github.event_name == 'release'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-dists
           path: dist/
@@ -92,7 +96,7 @@ jobs:
       id-token: write
     steps:
       - name: Retrieve package artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: release-dists
           path: dist/

@@ -94,12 +94,12 @@ async def rebuild(
     assert layout.primary is not None
     primary_raw.write_bytes(data[layout.primary.offset : layout.primary.end])
 
-    code, stderr = await video.run_command(image.build_convert_command(primary_raw, primary_out, image_rules, cfg))
+    code, stderr = await video.run_command(image.build_magick_command(primary_raw, primary_out, image_rules, cfg))
     if code != 0 or not primary_out.exists():
         return handlers.HandlerResult(
             ok=False,
             original_size=original_size,
-            error=f"primary resize failed: {handlers.tail(stderr) or f'convert exit {code}'}",
+            error=f"primary resize failed: {handlers.tail(stderr) or f'magick exit {code}'}",
         )
 
     # Copy metadata from the original container. exiftool reads the primary's
@@ -180,7 +180,7 @@ async def _process_gain_map(
     out = scratch.path("gain_out", ".jpg")
     # fmt: off
     argv = [
-        cfg.tools.convert,
+        cfg.tools.magick,
         str(raw),
         "-resize", f"{rules.max_edge}x{rules.max_edge}>",
         "-quality", str(rules.quality),
@@ -191,7 +191,7 @@ async def _process_gain_map(
     if code != 0 or not out.exists():
         # Keeping the original gain map bytes preserves HDR at the cost of a few
         # KB, which beats dropping it and silently downgrading the image.
-        return blob, f"gain map kept unresized: rescale failed ({handlers.tail(stderr) or f'convert exit {code}'})"
+        return blob, f"gain map kept unresized: rescale failed ({handlers.tail(stderr) or f'magick exit {code}'})"
     return out.read_bytes(), ""
 
 

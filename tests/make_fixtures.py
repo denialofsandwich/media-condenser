@@ -117,7 +117,7 @@ def make_image(
     """Render a gradient image, optionally stamping synthetic camera metadata."""
     with tempfile.TemporaryDirectory() as tmp:
         raw = Path(tmp) / ("x.png" if png else "x.jpg")
-        argv = ["convert", "-size", f"{width}x{height}", f"gradient:{gradient}"]
+        argv = ["magick", "-size", f"{width}x{height}", f"gradient:{gradient}"]
         if not png:
             argv += ["-quality", str(quality), "-sampling-factor", "4:4:4"]
         argv.append(str(raw))
@@ -233,7 +233,7 @@ def gain_map_bytes(width: int, height: int) -> bytes:
         target = Path(tmp) / "gm.jpg"
         # fmt: off
         run([
-            "convert", "-size", f"{width}x{height}",
+            "magick", "-size", f"{width}x{height}",
             "gradient:gray10-gray90", "-colorspace", "Gray",
             "-quality", "90", str(target),
         ])
