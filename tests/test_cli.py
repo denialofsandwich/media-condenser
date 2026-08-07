@@ -216,11 +216,14 @@ def test_a_directory_is_refused_where_a_file_is_meant(tmp_path) -> None:
 
 
 def _unbox(text: str) -> str:
-    """Message text with rich's box drawing and wrapping taken back out.
+    """Message text with rich's box drawing, ANSI color and wrapping taken back out.
 
     Rich puts errors in a panel, so a long path pushes the message onto a second
-    line with a border in the middle of the sentence.
+    line with a border in the middle of the sentence. Colour is stripped too: with
+    it left in, GitHub Actions (which forces color on) leaves escape codes sitting
+    where the border used to be, which breaks the substring match just as badly.
     """
+    text = re.sub(r"\x1b\[[0-9;]*m", "", text)
     return " ".join(re.sub(r"[│╭╮╰╯─]", " ", text).split())
 
 

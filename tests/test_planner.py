@@ -13,7 +13,11 @@ from media_condenser import config, discovery, planner, probe, storage
 
 @pytest.fixture(scope="module")
 def actions() -> dict[str, object]:
-    cfg = config.GlobalConfig()
+    # skip_name_patterns ships with no default -- "Screenshot" is too narrow an
+    # assumption to bake into everyone's config -- so the exclusion this module's
+    # fixtures exercise is configured explicitly here, the way a user would.
+    rules = config.Rules.model_validate({"images": {"skip_name_patterns": ["Screenshot*"]}})
+    cfg = config.GlobalConfig(rules=rules)
     resolver = config.RulesResolver(cfg.rules, [fixtures.ROOT])
     prober = probe.Prober(cfg.tools)
     return {c.path.name: planner.plan(c, prober) for c in discovery.walk([fixtures.ROOT], resolver)}
@@ -324,7 +328,10 @@ def test_disabling_a_media_type_skips_it() -> None:
 
 
 def test_png_exclusion_can_be_turned_off() -> None:
-    """The screenshot skip is a default, not a hard rule."""
+    """Both screenshot exclusions are configurable: ``skip_png`` defaults on and can be
+    turned off, ``skip_name_patterns`` ships with nothing configured and stays that
+    way here.
+    """
     rules = config.Rules.model_validate({"images": {"skip_png": False, "skip_name_patterns": []}})
     resolver = config.RulesResolver(rules, [fixtures.IMAGES])
     prober = probe.Prober(config.GlobalConfig().tools)

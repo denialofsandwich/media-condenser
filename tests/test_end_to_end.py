@@ -66,7 +66,10 @@ def exif_of(path: Path, *tags: str) -> str:
 @pytest.fixture(scope="module")
 def image_run(tmp_path_factory) -> tuple[Path, report.Reporter]:
     output = tmp_path_factory.mktemp("images_out")
-    cfg = config.GlobalConfig(output_dir=output, jobs=4)
+    # skip_name_patterns ships with no default, so the "Screenshot" exclusion this
+    # module's fixtures exercise is configured explicitly, the way a user would.
+    rules = config.Rules.model_validate({"images": {"skip_name_patterns": ["Screenshot*"]}})
+    cfg = config.GlobalConfig(output_dir=output, jobs=4, rules=rules)
     return output, run_tool([fixtures.IMAGES], cfg, scan_root=fixtures.IMAGES)
 
 
@@ -581,7 +584,9 @@ def test_video_creation_metadata_survives(video_run) -> None:
 def test_skipped_files_are_copied_into_the_mirror_tree(tmp_path) -> None:
     """A mirror tree must be complete, not full of holes where skips happened."""
     output = tmp_path / "out"
-    reporter = run_tool([fixtures.IMAGES], config.GlobalConfig(output_dir=output, jobs=4), scan_root=fixtures.IMAGES)
+    rules = config.Rules.model_validate({"images": {"skip_name_patterns": ["Screenshot*"]}})
+    cfg = config.GlobalConfig(output_dir=output, jobs=4, rules=rules)
+    reporter = run_tool([fixtures.IMAGES], cfg, scan_root=fixtures.IMAGES)
 
     skipped = [r for r in reporter.records if r.outcome is report.Outcome.SKIPPED]
     assert len(skipped) == len(fixtures.SKIPPED_IMAGES)
