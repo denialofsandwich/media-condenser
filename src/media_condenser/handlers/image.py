@@ -13,7 +13,7 @@ from media_condenser import config, handlers
 from media_condenser.handlers import video
 
 
-def build_magick_command(
+def build_convert_command(
     source: Path,
     target: Path,
     rules: config.ImageRules,
@@ -28,7 +28,7 @@ def build_magick_command(
     """
     # fmt: off
     return [
-        cfg.tools.magick,
+        cfg.tools.convert,
         str(source),
         "-auto-orient",
         "-resize", f"{rules.max_edge}x{rules.max_edge}>",
@@ -99,10 +99,10 @@ async def resize(
     """Resize ``source`` into ``target`` and restore its metadata."""
     original_size = source.stat().st_size
 
-    code, stderr = await video.run_command(build_magick_command(source, target, rules, cfg))
+    code, stderr = await video.run_command(build_convert_command(source, target, rules, cfg))
     if code != 0 or not target.exists():
         return handlers.HandlerResult(
-            ok=False, original_size=original_size, error=handlers.tail(stderr) or f"magick exit {code}"
+            ok=False, original_size=original_size, error=handlers.tail(stderr) or f"convert exit {code}"
         )
 
     code, stderr = await video.run_command(build_metadata_restore_command(source, target, cfg))

@@ -51,7 +51,7 @@ tools:
   ffmpeg: ffmpeg
   ffprobe: ffprobe
   exiftool: exiftool
-  magick: magick
+  convert: convert
 
 # Anything under `rules` can be overridden per directory by a .mcon.yaml file.
 rules:

@@ -1,0 +1,100 @@
+---
+name: CI/CD
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  test_python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libimage-exiftool-perl imagemagick
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Generate test fixtures
+        run: uv run python tests/make_fixtures.py
+      - name: Run tests
+        run: uv run pytest
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+      - name: Install pre-commit
+        run: pip install pre-commit uv
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+
+  build_python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv sync --locked --no-dev
+
+      - name: Build package
+        run: uv build
+
+      - name: Upload package artifacts
+        if: github.event_name == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-dists
+          path: dist/
+
+  release_python:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    needs:
+      - test_python
+      - pre-commit
+      - build_python
+    environment:
+      name: pypi
+      url: https://pypi.org/p/media-condenser
+    permissions:
+      id-token: write
+    steps:
+      - name: Retrieve package artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-dists
+          path: dist/
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@release/v1.10

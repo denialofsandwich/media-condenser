@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import importlib.metadata
 import json
 import logging
 import os
@@ -44,6 +45,12 @@ log = logging.getLogger(__name__)
 EXIT_INTERRUPTED = 130
 
 
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(importlib.metadata.version("media_condenser"))
+        raise typer.Exit()
+
+
 @app.command()
 def main(
     # Flag names are only spelled out where they have to be: to add a short alias, or
@@ -55,6 +62,15 @@ def main(
         list[Path],
         typer.Argument(help="Files or directories to process.", exists=True),
     ],
+    _version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            callback=_version_callback,
+            is_eager=True,
+            help="Print the current version and exit.",
+        ),
+    ] = False,
     config_file: Annotated[
         Path | None,
         typer.Option(

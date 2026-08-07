@@ -256,7 +256,7 @@ def _decodes(argv: list[str], blob: bytes, *, require_exit_zero: bool) -> bool:
 
 
 def _decodes_as_image(blob: bytes, cfg: config.GlobalConfig) -> bool:
-    return _decodes([cfg.tools.magick, "-", "-format", "%wx%h", "info:"], blob, require_exit_zero=True)
+    return _decodes([cfg.tools.convert, "-", "-format", "%wx%h", "info:"], blob, require_exit_zero=True)
 
 
 def _decodes_as_video(blob: bytes, cfg: config.GlobalConfig) -> bool:
